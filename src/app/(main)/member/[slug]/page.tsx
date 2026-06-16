@@ -303,10 +303,10 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                   href={`/member/${next.slug}`}
                   className="w-full sm:w-1/2 glass-panel p-5 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 hover:border-white/20 group text-right"
                 >
-                  <div className="flex items-center gap-4 text-left ml-auto">
+                  <div className="flex items-center gap-4 text-right ml-auto">
                     <div>
                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block text-right">NEXT MEMBER</span>
-                      <h4 className="text-sm font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors"
+                      <h4 className="text-sm font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors block text-right"
                           style={{
                             backgroundImage: `linear-gradient(135deg, #ffffff, ${next.color})`
                           }}>
