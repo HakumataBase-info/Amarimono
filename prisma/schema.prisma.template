@@ -1,0 +1,65 @@
+datasource db {
+  provider = "DATABASE_PROVIDER"
+  url      = DATABASE_URL
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Member {
+  id           String    @id @default(uuid())
+  name         String
+  slug         String    @unique
+  reading      String
+  iconImage    String    // プロフィール画像
+  headerImage  String    // ヘッダー背景 / 大型ビジュアル
+  description  String    // 自己紹介
+  favoriteGame String    // 好きなゲーム
+  color        String    // メンバーカラー（例: "#7C3AED"）
+  birthday     String    // 誕生日
+  height       String    // 身長
+  hobby        String    // 趣味
+  youtube      String?
+  twitch       String?
+  twitter      String?
+  tiktok       String?
+  instagram    String?
+  fanName      String?   // ファンネーム
+  hashtag      String?   // ハッシュタグ
+  career       String    // 経歴・活動実績 (JSON形式のテキスト)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  gallery      Gallery[]
+  movies       Movie[]
+}
+
+model Gallery {
+  id       String @id @default(uuid())
+  memberId String
+  image    String
+  order    Int
+  
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model Movie {
+  id        String @id @default(uuid())
+  memberId  String
+  youtubeId String
+  title     String
+  
+  member    Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model News {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  thumbnail String
+  content   String   // 本文 (Markdown対応)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
