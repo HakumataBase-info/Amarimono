@@ -96,11 +96,9 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                 {member.reading}
               </span>
               <h1
-                className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5"
+                className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5 bg-clip-text text-transparent"
                 style={{
                   backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${member.color} 100%)`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
                 }}
               >
                 {member.name}
@@ -115,10 +113,10 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
         </section>
 
         {/* ================= PROFILE CONTENT ================= */}
-        <section className="max-w-7xl mx-auto px-6 mt-16 grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
+        <section className="max-w-7xl mx-auto px-6 mt-16 grid grid-cols-1 lg:grid-cols-12 gap-12 relative z-10">
           
-          {/* 左カラム: 詳細プロフィール・SNS (1/3幅) */}
-          <div className="flex flex-col gap-8">
+          {/* 左カラム: 詳細プロフィール・SNS (lg: 3/12幅) */}
+          <div className="lg:col-span-3 flex flex-col gap-8">
             <div className="glass-panel p-8 rounded-2xl flex flex-col gap-6 relative overflow-hidden">
               {/* メンバーカラー背景装飾 */}
               <div
@@ -133,19 +131,11 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
               <ul className="flex flex-col gap-4 text-sm">
                 <li className="flex justify-between">
                   <span className="text-slate-500 font-medium">Favorite Game</span>
-                  <span className="text-slate-200 text-right max-w-[180px] font-semibold">{member.favoriteGame}</span>
+                  <span className="text-slate-200 text-right max-w-[150px] font-semibold">{member.favoriteGame}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-slate-500 font-medium">Birthday</span>
                   <span className="text-slate-200 font-semibold">{member.birthday}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Height</span>
-                  <span className="text-slate-200 font-semibold">{member.height}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Hobby</span>
-                  <span className="text-slate-200 text-right max-w-[180px] font-semibold">{member.hobby}</span>
                 </li>
                 {member.fanName && (
                   <li className="flex justify-between">
@@ -217,9 +207,21 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             </div>
           </div>
 
-          {/* 右カラム: 自己紹介・タイムライン・ギャラリー・動画 (2/3幅) */}
-          <div className="lg:col-span-2 flex flex-col gap-16">
+          {/* 中央カラム: 自己紹介・経歴・ギャラリー・動画 (lg: 6/12幅、立ち絵がない場合は 9/12幅) */}
+          <div className={`${member.standingImage ? "lg:col-span-6" : "lg:col-span-9"} flex flex-col gap-16`}>
             
+            {/* モバイル表示時の立ち絵 (自己紹介の前に配置) */}
+            {member.standingImage && (
+              <div className="block lg:hidden relative w-full aspect-[3/4] max-w-xs mx-auto overflow-hidden rounded-2xl bg-gradient-to-b from-transparent to-white/5 p-4 border border-white/5">
+                <Image
+                  src={member.standingImage}
+                  alt={`${member.name} Standing`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
+
             {/* 自己紹介 */}
             <div className="flex flex-col gap-4">
               <h3 className="text-xl font-bold tracking-widest text-white flex items-center gap-3">
@@ -262,6 +264,27 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
               </div>
             )}
           </div>
+
+          {/* 右カラム: デスクトップ表示時の大きな立ち絵 (lg: 3/12幅) */}
+          {member.standingImage && (
+            <div className="hidden lg:block lg:col-span-3">
+              <div className="sticky top-28 w-full h-[70vh] rounded-3xl bg-gradient-to-b from-white/[0.02] to-white/5 border border-white/5 p-4 shadow-[0_15px_35px_rgba(0,0,0,0.5)] overflow-hidden group">
+                {/* 立ち絵背後のネオン光彩 */}
+                <div
+                  className="absolute inset-0 opacity-20 blur-[50px] rounded-full scale-75 group-hover:scale-90 transition-transform duration-1000"
+                  style={{
+                    background: `radial-gradient(circle, ${member.color} 0%, transparent 70%)`
+                  }}
+                />
+                <Image
+                  src={member.standingImage}
+                  alt={`${member.name} Standing`}
+                  fill
+                  className="object-contain relative z-10 transition-transform duration-700 hover:scale-[1.03] p-2"
+                />
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ================= RELATED / ADJACENT MEMBERS ================= */}

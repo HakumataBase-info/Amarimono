@@ -45,12 +45,11 @@ interface MemberWithRelations {
   reading: string;
   iconImage: string;
   headerImage: string;
+  standingImage: string | null;
   description: string;
   favoriteGame: string;
   color: string;
   birthday: string;
-  height: string;
-  hobby: string;
   youtube: string | null;
   twitch: string | null;
   twitter: string | null;
@@ -90,6 +89,30 @@ export default function AdminDashboardClient({
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 画像ファイルアップロード時のBase64エンコード処理
+  const handleImageFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "iconImage" | "headerImage" | "standingImage"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("ファイルサイズが大きすぎます。2MB以下の画像を選択してください。");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        setEditingMember((prev) =>
+          prev ? { ...prev, [field]: reader.result } : null
+        );
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // メンバー編集/作成状態
   const [editingMember, setEditingMember] = useState<Partial<MemberWithRelations> | null>(null);
   const [memberGalleryUrls, setMemberGalleryUrls] = useState<string[]>([]);
@@ -117,12 +140,11 @@ export default function AdminDashboardClient({
       reading: "",
       iconImage: "",
       headerImage: "",
+      standingImage: "",
       description: "",
       favoriteGame: "",
       color: "#06B6D4",
       birthday: "",
-      height: "",
-      hobby: "",
       youtube: "",
       twitch: "",
       twitter: "",
@@ -145,12 +167,11 @@ export default function AdminDashboardClient({
       reading: member.reading,
       iconImage: member.iconImage,
       headerImage: member.headerImage,
+      standingImage: member.standingImage || "",
       description: member.description,
       favoriteGame: member.favoriteGame,
       color: member.color,
       birthday: member.birthday,
-      height: member.height,
-      hobby: member.hobby,
       youtube: member.youtube || "",
       twitch: member.twitch || "",
       twitter: member.twitter || "",
@@ -188,12 +209,11 @@ export default function AdminDashboardClient({
           reading: editingMember.reading!,
           iconImage: editingMember.iconImage || "",
           headerImage: editingMember.headerImage || "",
+          standingImage: editingMember.standingImage || "",
           description: editingMember.description || "",
           favoriteGame: editingMember.favoriteGame || "",
           color: editingMember.color || "#06B6D4",
           birthday: editingMember.birthday || "",
-          height: editingMember.height || "",
-          hobby: editingMember.hobby || "",
           youtube: editingMember.youtube || undefined,
           twitch: editingMember.twitch || undefined,
           twitter: editingMember.twitter || undefined,
@@ -437,25 +457,91 @@ export default function AdminDashboardClient({
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">アイコン画像 URL</label>
-                  <input
-                    type="text"
-                    value={editingMember.iconImage || ""}
-                    onChange={(e) => setEditingMember({ ...editingMember, iconImage: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-sm"
-                    placeholder="https://images.unsplash.com/..."
-                  />
+                {/* アイコン画像 */}
+                <div className="space-y-2">
+                  <label className="block text-xs text-slate-400 font-bold">アイコン画像 (プロフィール用) *</label>
+                  <div className="flex gap-3 items-center">
+                    <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                      {editingMember.iconImage ? (
+                        <Image src={editingMember.iconImage} alt="Icon Preview" fill className="object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-slate-500">No Image</span>
+                      )}
+                    </div>
+                    <div className="flex-grow space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileChange(e, "iconImage")}
+                        className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={editingMember.iconImage || ""}
+                        onChange={(e) => setEditingMember({ ...editingMember, iconImage: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                        placeholder="または画像URLを直接入力..."
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">ヘッダー画像 URL</label>
-                  <input
-                    type="text"
-                    value={editingMember.headerImage || ""}
-                    onChange={(e) => setEditingMember({ ...editingMember, headerImage: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-sm"
-                    placeholder="https://images.unsplash.com/..."
-                  />
+
+                {/* ヘッダー画像 */}
+                <div className="space-y-2">
+                  <label className="block text-xs text-slate-400 font-bold">ヘッダー画像 (詳細ページ背景用) *</label>
+                  <div className="flex gap-3 items-center">
+                    <div className="relative w-20 h-10 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                      {editingMember.headerImage ? (
+                        <Image src={editingMember.headerImage} alt="Header Preview" fill className="object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-slate-500">No Image</span>
+                      )}
+                    </div>
+                    <div className="flex-grow space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileChange(e, "headerImage")}
+                        className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={editingMember.headerImage || ""}
+                        onChange={(e) => setEditingMember({ ...editingMember, headerImage: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                        placeholder="または画像URLを直接入力..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 立ち絵画像 */}
+                <div className="space-y-2">
+                  <label className="block text-xs text-slate-400 font-bold">立ち絵画像 (透過全身イラスト用)</label>
+                  <div className="flex gap-3 items-center">
+                    <div className="relative w-14 h-16 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                      {editingMember.standingImage ? (
+                        <Image src={editingMember.standingImage} alt="Standing Preview" fill className="object-contain" />
+                      ) : (
+                        <span className="text-[10px] text-slate-500">No Image</span>
+                      )}
+                    </div>
+                    <div className="flex-grow space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileChange(e, "standingImage")}
+                        className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={editingMember.standingImage || ""}
+                        onChange={(e) => setEditingMember({ ...editingMember, standingImage: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                        placeholder="または画像URLを直接入力..."
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -476,35 +562,15 @@ export default function AdminDashboardClient({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">身長</label>
+                    <label className="block text-xs text-slate-400 mb-1">好きなゲーム</label>
                     <input
                       type="text"
-                      value={editingMember.height || ""}
-                      onChange={(e) => setEditingMember({ ...editingMember, height: e.target.value })}
+                      value={editingMember.favoriteGame || ""}
+                      onChange={(e) => setEditingMember({ ...editingMember, favoriteGame: e.target.value })}
                       className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-sm"
-                      placeholder="178cm"
+                      placeholder="VALORANT, Apex Legends"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">好きなゲーム</label>
-                  <input
-                    type="text"
-                    value={editingMember.favoriteGame || ""}
-                    onChange={(e) => setEditingMember({ ...editingMember, favoriteGame: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-sm"
-                    placeholder="VALORANT, Apex Legends"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">趣味</label>
-                  <input
-                    type="text"
-                    value={editingMember.hobby || ""}
-                    onChange={(e) => setEditingMember({ ...editingMember, hobby: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-sm"
-                    placeholder="バイク、筋トレ"
-                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

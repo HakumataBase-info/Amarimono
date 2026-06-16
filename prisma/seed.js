@@ -22,8 +22,6 @@ async function main() {
       favoriteGame: 'VALORANT, Apex Legends',
       color: '#7C3AED', // 紫
       birthday: '10月24日',
-      height: '178cm',
-      hobby: 'バイク、筋トレ、エナジードリンクの飲み比べ',
       youtube: 'https://youtube.com/c/example-ren',
       twitch: 'https://twitch.tv/example-ren',
       twitter: 'https://twitter.com/example-ren',
@@ -62,8 +60,6 @@ async function main() {
       favoriteGame: 'Minecraft, 原神, 崩壊:スターレイル',
       color: '#EC4899', // ピンク
       birthday: '3月15日',
-      height: '152cm',
-      hobby: '作詞・作曲、可愛いカフェ巡り、長風呂',
       youtube: 'https://youtube.com/c/example-mia',
       twitch: 'https://twitch.tv/example-mia',
       twitter: 'https://twitter.com/example-mia',
@@ -102,8 +98,6 @@ async function main() {
       favoriteGame: 'League of Legends, VALORANT, 格闘ゲーム全般',
       color: '#06B6D4', // 水色
       birthday: '8月8日',
-      height: '174cm',
-      hobby: 'ラーメン屋巡り、自作PCのカスタマイズ、ガジェット収集',
       youtube: 'https://youtube.com/c/example-kanato',
       twitch: 'https://twitch.tv/example-kanato',
       twitter: 'https://twitter.com/example-kanato',
@@ -142,8 +136,6 @@ async function main() {
       favoriteGame: 'モンスターハンター, あつまれ どうぶつの森, Party Games',
       color: '#EAB308', // 黄色
       birthday: '12月1日',
-      height: '148cm',
-      hobby: 'お菓子作り、海外アニメ鑑賞、実家の犬と遊ぶ',
       youtube: 'https://youtube.com/c/example-nene',
       twitter: 'https://twitter.com/example-nene',
       tiktok: 'https://tiktok.com/@example-nene',

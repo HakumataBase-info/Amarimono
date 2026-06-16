@@ -18,8 +18,7 @@ model Member {
   favoriteGame String    // 好きなゲーム
   color        String    // メンバーカラー（例: "#7C3AED"）
   birthday     String    // 誕生日
-  height       String    // 身長
-  hobby        String    // 趣味
+  standingImage String?  // 立ち絵画像 (Base64またはURL)
   youtube      String?
   twitch       String?
   twitter      String?

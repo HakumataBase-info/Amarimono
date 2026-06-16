@@ -57,12 +57,11 @@ export async function createOrUpdateMember(
     reading: string;
     iconImage: string;
     headerImage: string;
+    standingImage?: string;
     description: string;
     favoriteGame: string;
     color: string;
     birthday: string;
-    height: string;
-    hobby: string;
     youtube?: string;
     twitch?: string;
     twitter?: string;
@@ -83,12 +82,11 @@ export async function createOrUpdateMember(
     reading: data.reading,
     iconImage: data.iconImage,
     headerImage: data.headerImage,
+    standingImage: data.standingImage || null,
     description: data.description,
     favoriteGame: data.favoriteGame,
     color: data.color,
     birthday: data.birthday,
-    height: data.height,
-    hobby: data.hobby,
     youtube: data.youtube || null,
     twitch: data.twitch || null,
     twitter: data.twitter || null,
