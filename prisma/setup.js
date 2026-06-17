@@ -9,18 +9,30 @@ console.log('--- Prisma Setup Script ---');
 
 // 環境変数の取得
 console.log("Available database-related env keys:", Object.keys(process.env).filter(k => /database|postgres|url/i.test(k)));
-const databaseUrl = process.env.DATABASE_URL;
+
+// 利用可能なPostgres環境変数を検知
+let databaseUrl = process.env.DATABASE_URL;
+let envVarName = 'DATABASE_URL';
+
+if (!databaseUrl && process.env.POSTGRES_PRISMA_URL) {
+  databaseUrl = process.env.POSTGRES_PRISMA_URL;
+  envVarName = 'POSTGRES_PRISMA_URL';
+} else if (!databaseUrl && process.env.POSTGRES_URL) {
+  databaseUrl = process.env.POSTGRES_URL;
+  envVarName = 'POSTGRES_URL';
+}
+
 let provider = 'sqlite';
 let urlValue = '"file:./dev.db"';
 
 if (databaseUrl && (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'))) {
   provider = 'postgresql';
-  urlValue = 'env("DATABASE_URL")';
-  console.log('Detected PostgreSQL environment (Vercel Postgres / Supabase).');
+  urlValue = `env("${envVarName}")`;
+  console.log(`Detected PostgreSQL environment via env var: ${envVarName}`);
 } else {
   if (process.env.VERCEL === '1') {
-    console.error('\x1b[31m[ERROR] Vercel environment detected but no PostgreSQL DATABASE_URL is found!\x1b[0m');
-    console.error('\x1b[33mPlease add your database connection string in Vercel Project Settings -> Environment Variables as "DATABASE_URL".\x1b[0m');
+    console.error('\x1b[31m[ERROR] Vercel environment detected but no PostgreSQL environment variables (DATABASE_URL, POSTGRES_PRISMA_URL, etc.) are found!\x1b[0m');
+    console.error('\x1b[33mPlease connect a Postgres Database via the "Storage" tab in Vercel or add DATABASE_URL manually in Environment Variables.\x1b[0m');
     process.exit(1); // Fail the build to avoid silent fallback to read-only SQLite
   }
   console.log('No PostgreSQL DATABASE_URL detected. Falling back to local SQLite.');
