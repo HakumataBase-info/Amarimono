@@ -544,13 +544,26 @@ export default function AdminDashboardClient({
                         onChange={(e) => handleImageFileChange(e, "iconImage")}
                         className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
                       />
-                      <input
-                        type="text"
-                        value={editingMember.iconImage || ""}
-                        onChange={(e) => setEditingMember({ ...editingMember, iconImage: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
-                        placeholder="または画像URLを直接入力..."
-                      />
+                      {(!editingMember.iconImage || !editingMember.iconImage.startsWith("data:")) ? (
+                        <input
+                          type="text"
+                          value={editingMember.iconImage || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, iconImage: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                          placeholder="または画像URLを直接入力..."
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-white/10 rounded bg-cyan-950/20 text-cyan-400 text-xs">
+                          <span className="truncate max-w-[200px]">✓ 画像ファイルが選択されています</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMember({ ...editingMember, iconImage: "" })}
+                            className="text-pink-500 hover:text-pink-400 font-semibold text-[10px] cursor-pointer"
+                          >
+                            クリア
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -573,13 +586,26 @@ export default function AdminDashboardClient({
                         onChange={(e) => handleImageFileChange(e, "headerImage")}
                         className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
                       />
-                      <input
-                        type="text"
-                        value={editingMember.headerImage || ""}
-                        onChange={(e) => setEditingMember({ ...editingMember, headerImage: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
-                        placeholder="または画像URLを直接入力..."
-                      />
+                      {(!editingMember.headerImage || !editingMember.headerImage.startsWith("data:")) ? (
+                        <input
+                          type="text"
+                          value={editingMember.headerImage || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, headerImage: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                          placeholder="または画像URLを直接入力..."
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-white/10 rounded bg-cyan-950/20 text-cyan-400 text-xs">
+                          <span className="truncate max-w-[200px]">✓ 画像ファイルが選択されています</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMember({ ...editingMember, headerImage: "" })}
+                            className="text-pink-500 hover:text-pink-400 font-semibold text-[10px] cursor-pointer"
+                          >
+                            クリア
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -602,13 +628,26 @@ export default function AdminDashboardClient({
                         onChange={(e) => handleImageFileChange(e, "standingImage")}
                         className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
                       />
-                      <input
-                        type="text"
-                        value={editingMember.standingImage || ""}
-                        onChange={(e) => setEditingMember({ ...editingMember, standingImage: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
-                        placeholder="または画像URLを直接入力..."
-                      />
+                      {(!editingMember.standingImage || !editingMember.standingImage.startsWith("data:")) ? (
+                        <input
+                          type="text"
+                          value={editingMember.standingImage || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, standingImage: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                          placeholder="または画像URLを直接入力..."
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-white/10 rounded bg-cyan-950/20 text-cyan-400 text-xs">
+                          <span className="truncate max-w-[200px]">✓ 画像ファイルが選択されています</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMember({ ...editingMember, standingImage: "" })}
+                            className="text-pink-500 hover:text-pink-400 font-semibold text-[10px] cursor-pointer"
+                          >
+                            クリア
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
