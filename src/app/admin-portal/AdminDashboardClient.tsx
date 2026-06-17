@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import SafeImage from "@/components/common/SafeImage";
 import {
   createOrUpdateMember,
   deleteMember,
@@ -317,7 +317,7 @@ export default function AdminDashboardClient({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-6 gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Logo" width={50} height={30} className="object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" />
+            <SafeImage src="/logo.png" alt="Logo" width={50} height={30} className="object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" />
             <h1 className="text-xl sm:text-2xl font-black tracking-widest text-white">
               ADMIN CONTROL PANEL
             </h1>
@@ -463,7 +463,7 @@ export default function AdminDashboardClient({
                   <div className="flex gap-3 items-center">
                     <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
                       {editingMember.iconImage ? (
-                        <Image src={editingMember.iconImage} alt="Icon Preview" fill className="object-cover" />
+                        <SafeImage src={editingMember.iconImage} alt="Icon Preview" fill className="object-cover" />
                       ) : (
                         <span className="text-[10px] text-slate-500">No Image</span>
                       )}
@@ -492,7 +492,7 @@ export default function AdminDashboardClient({
                   <div className="flex gap-3 items-center">
                     <div className="relative w-20 h-10 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
                       {editingMember.headerImage ? (
-                        <Image src={editingMember.headerImage} alt="Header Preview" fill className="object-cover" />
+                        <SafeImage src={editingMember.headerImage} alt="Header Preview" fill className="object-cover" />
                       ) : (
                         <span className="text-[10px] text-slate-500">No Image</span>
                       )}
@@ -521,7 +521,7 @@ export default function AdminDashboardClient({
                   <div className="flex gap-3 items-center">
                     <div className="relative w-14 h-16 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
                       {editingMember.standingImage ? (
-                        <Image src={editingMember.standingImage} alt="Standing Preview" fill className="object-contain" />
+                        <SafeImage src={editingMember.standingImage} alt="Standing Preview" fill className="object-contain" />
                       ) : (
                         <span className="text-[10px] text-slate-500">No Image</span>
                       )}
@@ -991,7 +991,7 @@ export default function AdminDashboardClient({
                         <td className="py-3.5 px-4">
                           <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10">
                             {member.iconImage ? (
-                              <Image src={member.iconImage} alt={member.name} fill className="object-cover" />
+                              <SafeImage src={member.iconImage} alt={member.name} fill className="object-cover" />
                             ) : (
                               <div className="w-full h-full bg-slate-800 flex items-center justify-center text-xs">No Image</div>
                             )}

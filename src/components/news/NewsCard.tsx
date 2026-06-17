@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/components/common/SafeImage";
 import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { News } from "@/types";
@@ -36,7 +36,7 @@ export default function NewsCard({ news, index = 0 }: NewsCardProps) {
       >
         {/* サムネイル画像 */}
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/30">
-          <Image
+          <SafeImage
             src={news.thumbnail}
             alt={news.title}
             fill

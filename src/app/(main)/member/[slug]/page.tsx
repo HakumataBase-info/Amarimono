@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import SafeImage from "@/components/common/SafeImage";
 import Link from "next/link";
 import { Metadata } from "next";
 import { Youtube, Twitter, Instagram, ChevronLeft, ChevronRight } from "lucide-react";
@@ -64,7 +64,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
         
         {/* ================= LARGE HERO VISUAL ================= */}
         <section className="relative h-[45vh] md:h-[60vh] w-full overflow-hidden bg-black/80">
-          <Image
+          <SafeImage
             src={member.headerImage}
             alt={`${member.name} Header Image`}
             fill
@@ -81,7 +81,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
               className="relative w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-2 bg-black/60 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex-shrink-0"
               style={{ borderColor: member.color }}
             >
-              <Image
+              <SafeImage
                 src={member.iconImage}
                 alt={member.name}
                 fill
@@ -213,7 +213,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             {/* モバイル表示時の立ち絵 (自己紹介の前に配置) */}
             {member.standingImage && (
               <div className="block lg:hidden relative w-full aspect-[3/4] max-w-xs mx-auto overflow-hidden rounded-2xl bg-gradient-to-b from-transparent to-white/5 p-4 border border-white/5">
-                <Image
+                <SafeImage
                   src={member.standingImage}
                   alt={`${member.name} Standing`}
                   fill
@@ -276,7 +276,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                     background: `radial-gradient(circle, ${member.color} 0%, transparent 70%)`
                   }}
                 />
-                <Image
+                <SafeImage
                   src={member.standingImage}
                   alt={`${member.name} Standing`}
                   fill
@@ -302,7 +302,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                 >
                   <ChevronLeft size={20} className="text-slate-500 group-hover:text-white transition-colors" />
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/40">
-                    <Image
+                    <SafeImage
                       src={prev.iconImage}
                       alt={prev.name}
                       fill
@@ -337,7 +337,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                       </h4>
                     </div>
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/40">
-                      <Image
+                      <SafeImage
                         src={next.iconImage}
                         alt={next.name}
                         fill

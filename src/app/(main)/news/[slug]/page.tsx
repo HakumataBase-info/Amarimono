@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import SafeImage from "@/components/common/SafeImage";
 import Link from "next/link";
 import { Metadata } from "next";
 import { Calendar, ChevronLeft } from "lucide-react";
@@ -92,7 +92,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
 
           {/* 大型サムネイル */}
           <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden border border-white/5 bg-black/40 mb-12 shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
-            <Image
+            <SafeImage
               src={news.thumbnail}
               alt={news.title}
               fill

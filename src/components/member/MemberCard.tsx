@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/components/common/SafeImage";
 import { motion } from "framer-motion";
 import { Youtube, Twitter, Instagram } from "lucide-react";
 import { MemberSummary } from "@/types";
@@ -39,7 +39,7 @@ export default function MemberCard({ member }: MemberCardProps) {
       >
         {/* 画像エリア */}
         <div className="relative aspect-square w-full overflow-hidden bg-black/40">
-          <Image
+          <SafeImage
             src={member.iconImage}
             alt={member.name}
             fill
