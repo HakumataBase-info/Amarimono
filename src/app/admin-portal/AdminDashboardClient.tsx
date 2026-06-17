@@ -80,6 +80,56 @@ interface AdminDashboardClientProps {
   initialNews: NewsItem[];
 }
 
+const compressAndResizeImage = (
+  file: File,
+  maxWidth: number,
+  maxHeight: number,
+  quality: number = 0.85
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get 2d context"));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const format = file.type || "image/jpeg";
+        const dataUrl = canvas.toDataURL(format, quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function AdminDashboardClient({
   initialMembers,
   initialNews,
@@ -89,28 +139,47 @@ export default function AdminDashboardClient({
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 画像ファイルアップロード時のBase64エンコード処理
-  const handleImageFileChange = (
+  // 画像ファイルアップロード時のBase64エンコード処理（リサイズ・圧縮機能付き）
+  const handleImageFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     field: "iconImage" | "headerImage" | "standingImage"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("ファイルサイズが大きすぎます。2MB以下の画像を選択してください。");
+    // 許容最大サイズは 10MB に緩和（クライアント側で圧縮するため）
+    if (file.size > 10 * 1024 * 1024) {
+      alert("ファイルサイズが大きすぎます。10MB以下の画像を選択してください。");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setEditingMember((prev) =>
-          prev ? { ...prev, [field]: reader.result } : null
-        );
+    try {
+      let maxWidth = 1200;
+      let maxHeight = 1200;
+      let quality = 0.85;
+
+      if (field === "iconImage") {
+        maxWidth = 400;
+        maxHeight = 400;
+        quality = 0.8;
+      } else if (field === "headerImage") {
+        maxWidth = 1200;
+        maxHeight = 800;
+        quality = 0.8;
+      } else if (field === "standingImage") {
+        // 立ち絵は大きめに維持
+        maxWidth = 1200;
+        maxHeight = 1600;
+        quality = 0.9;
       }
-    };
-    reader.readAsDataURL(file);
+
+      const base64Data = await compressAndResizeImage(file, maxWidth, maxHeight, quality);
+      setEditingMember((prev) =>
+        prev ? { ...prev, [field]: base64Data } : null
+      );
+    } catch (err: any) {
+      alert("画像の読み込み・圧縮に失敗しました: " + err.message);
+    }
   };
 
   // メンバー編集/作成状態
