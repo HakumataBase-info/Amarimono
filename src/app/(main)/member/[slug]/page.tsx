@@ -90,8 +90,8 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
               />
             </div>
 
-            {/* 名前・活動名 */}
-            <div className="text-center md:text-left">
+            {/* 名前・活動名：フィルターを親にかけて文字グラデーションをバグなく描画 */}
+            <div className="text-center md:text-left" style={{ filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.95)) drop-shadow(0 1px 2px rgba(0,0,0,0.95))" }}>
               <span className="text-xs md:text-sm font-bold tracking-[0.2em] uppercase opacity-65">
                 {member.reading}
               </span>
@@ -99,7 +99,6 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                 className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5 bg-clip-text text-transparent"
                 style={{
                   backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${member.color} 100%)`,
-                  filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.95)) drop-shadow(0 1px 2px rgba(0,0,0,0.95))",
                 }}
               >
                 {member.name}
@@ -114,7 +113,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
         </section>
 
         {/* ================= PROFILE CONTENT ================= */}
-        <section className="max-w-7xl mx-auto px-6 mt-16 grid grid-cols-1 lg:grid-cols-12 gap-12 relative z-10">
+        <section className="max-w-7xl mx-auto px-6 mt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
           
           {/* 左カラム: 詳細プロフィール・SNS (lg: 3/12幅) */}
           <div className="lg:col-span-3 flex flex-col gap-8">
@@ -266,13 +265,13 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             )}
           </div>
 
-          {/* 右カラム: デスクトップ表示時の大きな立ち絵 (lg: 4/12幅) */}
+          {/* 右カラム: デスクトップ表示時の大きな立ち絵 (lg: 4/12幅、マージンで左側に引き寄せ) */}
           {member.standingImage && (
-            <div className="hidden lg:block lg:col-span-4">
-              <div className="sticky top-24 w-full h-[75vh] overflow-hidden group flex items-center justify-start">
-                {/* 立ち絵背後のネオン光彩 */}
+            <div className="hidden lg:block lg:col-span-4 lg:-ml-12">
+              <div className="sticky top-24 w-full h-[80vh] flex items-center justify-start group">
+                {/* 立ち絵背後のネオン光彩: 完全に中央からのみの光 */}
                 <div
-                  className="absolute inset-0 opacity-25 blur-[60px] rounded-full scale-90 group-hover:scale-105 transition-transform duration-1000"
+                  className="absolute w-56 h-56 rounded-full opacity-40 blur-[50px] pointer-events-none left-[45%] top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 transition-transform duration-1000 group-hover:scale-110"
                   style={{
                     background: `radial-gradient(circle, ${member.color} 0%, transparent 70%)`
                   }}
@@ -281,7 +280,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                   src={member.standingImage}
                   alt={`${member.name} Standing`}
                   fill
-                  className="object-contain relative z-10 transition-transform duration-700 hover:scale-[1.02]"
+                  className="object-contain relative z-10 transition-transform duration-700 scale-[1.2] group-hover:scale-[1.25]"
                 />
               </div>
             </div>
