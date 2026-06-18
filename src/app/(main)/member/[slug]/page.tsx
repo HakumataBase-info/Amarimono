@@ -99,6 +99,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                 className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5 bg-clip-text text-transparent"
                 style={{
                   backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${member.color} 100%)`,
+                  filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.95)) drop-shadow(0 1px 2px rgba(0,0,0,0.95))",
                 }}
               >
                 {member.name}
@@ -207,8 +208,8 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             </div>
           </div>
 
-          {/* 中央カラム: 自己紹介・経歴・ギャラリー・動画 (lg: 6/12幅、立ち絵がない場合は 9/12幅) */}
-          <div className={`${member.standingImage ? "lg:col-span-6" : "lg:col-span-9"} flex flex-col gap-16`}>
+          {/* 中央カラム: 自己紹介・経歴・ギャラリー・動画 (lg: 5/12幅、立ち絵がない場合は 9/12幅) */}
+          <div className={`${member.standingImage ? "lg:col-span-5" : "lg:col-span-9"} flex flex-col gap-16`}>
             
             {/* モバイル表示時の立ち絵 (自己紹介の前に配置) */}
             {member.standingImage && (
@@ -265,13 +266,13 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             )}
           </div>
 
-          {/* 右カラム: デスクトップ表示時の大きな立ち絵 (lg: 3/12幅) */}
+          {/* 右カラム: デスクトップ表示時の大きな立ち絵 (lg: 4/12幅) */}
           {member.standingImage && (
-            <div className="hidden lg:block lg:col-span-3">
-              <div className="sticky top-28 w-full h-[70vh] rounded-3xl bg-gradient-to-b from-white/[0.02] to-white/5 border border-white/5 p-4 shadow-[0_15px_35px_rgba(0,0,0,0.5)] overflow-hidden group">
+            <div className="hidden lg:block lg:col-span-4">
+              <div className="sticky top-24 w-full h-[75vh] overflow-hidden group flex items-center justify-start">
                 {/* 立ち絵背後のネオン光彩 */}
                 <div
-                  className="absolute inset-0 opacity-20 blur-[50px] rounded-full scale-75 group-hover:scale-90 transition-transform duration-1000"
+                  className="absolute inset-0 opacity-25 blur-[60px] rounded-full scale-90 group-hover:scale-105 transition-transform duration-1000"
                   style={{
                     background: `radial-gradient(circle, ${member.color} 0%, transparent 70%)`
                   }}
@@ -280,7 +281,7 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                   src={member.standingImage}
                   alt={`${member.name} Standing`}
                   fill
-                  className="object-contain relative z-10 transition-transform duration-700 hover:scale-[1.03] p-2"
+                  className="object-contain relative z-10 transition-transform duration-700 hover:scale-[1.02]"
                 />
               </div>
             </div>

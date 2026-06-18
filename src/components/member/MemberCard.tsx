@@ -62,9 +62,10 @@ export default function MemberCard({ member }: MemberCardProps) {
           <span className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40">
             {member.reading}
           </span>
-          <h3 className="text-xl font-bold tracking-wide mt-1 text-white group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300"
+          <h3 className="text-xl font-bold tracking-wide mt-1 text-transparent bg-clip-text transition-all duration-300"
               style={{
-                backgroundImage: `linear-gradient(135deg, #ffffff 0%, ${member.color} 100%)`
+                backgroundImage: `linear-gradient(135deg, #ffffff 30%, ${member.color} 100%)`,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.9))"
               }}>
             {member.name}
           </h3>
