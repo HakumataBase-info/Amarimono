@@ -63,7 +63,7 @@ export default function MemberCard({ member }: MemberCardProps) {
             {member.reading}
           </span>
           <div style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.95))" }}>
-            <h3 className="text-xl font-bold tracking-wide mt-1 text-transparent bg-clip-text transition-all duration-300"
+            <h3 className="text-xl font-bold tracking-wide mt-1 text-transparent bg-clip-text transition-all duration-300 w-fit"
                 style={{
                   backgroundImage: `linear-gradient(135deg, #ffffff 30%, ${member.color} 100%)`
                 }}>

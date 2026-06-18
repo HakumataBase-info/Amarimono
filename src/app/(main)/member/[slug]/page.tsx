@@ -96,9 +96,9 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                 {member.reading}
               </span>
               <h1
-                className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5 bg-clip-text text-transparent"
+                className="text-3xl md:text-5xl font-extrabold tracking-wide mt-1.5 bg-clip-text text-transparent w-fit mx-auto md:mx-0"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${member.color} 100%)`,
+                  backgroundImage: `linear-gradient(135deg, #ffffff 20%, ${member.color} 100%)`,
                 }}
               >
                 {member.name}
@@ -309,14 +309,16 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                       className="object-cover"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col items-start">
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">PREV MEMBER</span>
-                    <h4 className="text-sm font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors"
-                        style={{
-                          backgroundImage: `linear-gradient(135deg, #ffffff, ${prev.color})`
-                        }}>
-                      {prev.name}
-                    </h4>
+                    <div style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.95))" }}>
+                      <h4 className="text-sm font-bold text-transparent bg-clip-text w-fit transition-all duration-300 group-hover:brightness-110"
+                          style={{
+                            backgroundImage: `linear-gradient(135deg, #ffffff 20%, ${prev.color} 100%)`
+                          }}>
+                        {prev.name}
+                      </h4>
+                    </div>
                   </div>
                 </Link>
               )}
@@ -327,14 +329,16 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
                   className="w-full sm:w-1/2 glass-panel p-5 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 hover:border-white/20 group text-right"
                 >
                   <div className="flex items-center gap-4 text-right ml-auto">
-                    <div>
+                    <div className="flex flex-col items-end">
                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block text-right">NEXT MEMBER</span>
-                      <h4 className="text-sm font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors block text-right"
-                          style={{
-                            backgroundImage: `linear-gradient(135deg, #ffffff, ${next.color})`
-                          }}>
-                        {next.name}
-                      </h4>
+                      <div style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.95))" }} className="ml-auto">
+                        <h4 className="text-sm font-bold text-transparent bg-clip-text w-fit ml-auto transition-all duration-300 group-hover:brightness-110 text-right"
+                            style={{
+                              backgroundImage: `linear-gradient(135deg, #ffffff 20%, ${next.color} 100%)`
+                            }}>
+                          {next.name}
+                        </h4>
+                      </div>
                     </div>
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/40">
                       <SafeImage
