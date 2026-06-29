@@ -8,7 +8,7 @@ import { generateSiteMetadata, generateNewsJsonLd } from "@/utils/seo";
 import { parseMarkdown } from "@/utils/formatter";
 import PageTransition from "@/components/common/PageTransition";
 
-export const revalidate = 60; // キャッシュ60秒
+export const revalidate = 86400; // キャッシュ24時間
 
 interface NewsDetailPageProps {
   params: Promise<{ slug: string }>;

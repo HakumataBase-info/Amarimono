@@ -9,6 +9,7 @@ import {
   createOrUpdateNews,
   deleteNews,
   logoutAdmin,
+  fetchYoutubeTitle,
 } from "./actions";
 import {
   Plus,
@@ -44,7 +45,7 @@ interface MemberWithRelations {
   slug: string;
   reading: string;
   iconImage: string;
-  headerImage: string;
+  headerImage: string | null;
   standingImage: string | null;
   description: string;
   favoriteGame: string;
@@ -118,8 +119,12 @@ const compressAndResizeImage = (
 
         ctx.drawImage(img, 0, 0, width, height);
 
-        const format = file.type || "image/jpeg";
-        const dataUrl = canvas.toDataURL(format, quality);
+        // 透過情報を維持しつつ容量を極小化するため、PNG/WebP/GIFは image/webp 形式に変換して圧縮率を高める
+        let outputFormat = "image/jpeg";
+        if (file.type === "image/png" || file.type === "image/webp" || file.type === "image/gif") {
+          outputFormat = "image/webp";
+        }
+        const dataUrl = canvas.toDataURL(outputFormat, quality);
         resolve(dataUrl);
       };
       img.onerror = () => reject(new Error("Failed to load image"));
@@ -128,6 +133,30 @@ const compressAndResizeImage = (
     reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
+};
+
+const extractYoutubeId = (urlOrId: string): string => {
+  if (!urlOrId) return "";
+  const trimmed = urlOrId.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
+  }
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = trimmed.match(regExp);
+  return match && match[2].length === 11 ? match[2] : "";
+};
+
+const parseDateString = (dateStr: string): number => {
+  if (!dateStr) return 0;
+  // 2024.04 や 2024/04 や 2024-04 などをパース
+  const matches = dateStr.trim().match(/^(\d{4})[./\-\s年]?(\d{1,2})?/);
+  if (matches) {
+    const year = parseInt(matches[1], 10);
+    const month = matches[2] ? parseInt(matches[2], 10) : 1;
+    return year * 100 + month;
+  }
+  const parsed = Date.parse(dateStr);
+  return isNaN(parsed) ? 0 : parsed;
 };
 
 export default function AdminDashboardClient({
@@ -159,18 +188,19 @@ export default function AdminDashboardClient({
       let quality = 0.85;
 
       if (field === "iconImage") {
-        maxWidth = 400;
-        maxHeight = 400;
-        quality = 0.8;
+        // 解像度を 500x500、画質を 0.85 に引き上げてガビガビ感を解消
+        maxWidth = 500;
+        maxHeight = 500;
+        quality = 0.85;
       } else if (field === "headerImage") {
         maxWidth = 1200;
         maxHeight = 800;
         quality = 0.8;
       } else if (field === "standingImage") {
-        // 立ち絵は大きめに維持
-        maxWidth = 1200;
-        maxHeight = 1600;
-        quality = 0.9;
+        // 立ち絵は解像度 1000x1400、画質 0.85 に引き上げて高精細化
+        maxWidth = 1000;
+        maxHeight = 1400;
+        quality = 0.85;
       }
 
       const base64Data = await compressAndResizeImage(file, maxWidth, maxHeight, quality);
@@ -182,11 +212,99 @@ export default function AdminDashboardClient({
     }
   };
 
+  // ギャラリー画像ファイルアップロード処理（圧縮機能付き）
+  const handleGalleryImageFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("ファイルサイズが大きすぎます。10MB以下の画像を選択してください。");
+      return;
+    }
+
+    try {
+      // ギャラリー画像は最大幅 1200px、画質 0.8 に自動リサイズ・圧縮して高精細化
+      const base64Data = await compressAndResizeImage(file, 1200, 900, 0.8);
+      const newUrls = [...memberGalleryUrls];
+      newUrls[idx] = base64Data;
+      setMemberGalleryUrls(newUrls);
+    } catch (err: any) {
+      alert("画像の読み込み・圧縮に失敗しました: " + err.message);
+    }
+  };
+
+  // ニュースのサムネイル画像ファイルアップロード処理（リサイズ・圧縮機能付き）
+  const handleNewsThumbnailFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("ファイルサイズが大きすぎます。10MB以下の画像を選択してください。");
+      return;
+    }
+
+    try {
+      // サムネイル用に幅1200px、画質0.8に自動リサイズ・圧縮して高精細化
+      const base64Data = await compressAndResizeImage(file, 1200, 800, 0.8);
+      setEditingNews((prev) =>
+        prev ? { ...prev, thumbnail: base64Data } : null
+      );
+    } catch (err: any) {
+      alert("画像の読み込み・圧縮に失敗しました: " + err.message);
+    }
+  };
+
   // メンバー編集/作成状態
   const [editingMember, setEditingMember] = useState<Partial<MemberWithRelations> | null>(null);
   const [memberGalleryUrls, setMemberGalleryUrls] = useState<string[]>([]);
   const [memberMovies, setMemberMovies] = useState<{ youtubeId: string; title: string }[]>([]);
   const [memberCareers, setMemberCareers] = useState<{ date: string; title: string }[]>([]);
+
+  // 動画自動取得状態
+  const [fetchingMovieIdxs, setFetchingMovieIdxs] = useState<Record<number, boolean>>({});
+
+  const handleMovieUrlOrIdChange = async (val: string, idx: number) => {
+    const newMovies = [...memberMovies];
+    newMovies[idx].youtubeId = val;
+    setMemberMovies(newMovies);
+
+    const id = extractYoutubeId(val);
+    if (id) {
+      newMovies[idx].youtubeId = id;
+      setMemberMovies([...newMovies]);
+
+      setFetchingMovieIdxs((prev) => ({ ...prev, [idx]: true }));
+      try {
+        const title = await fetchYoutubeTitle(id);
+        if (title) {
+          const updatedMovies = [...newMovies];
+          updatedMovies[idx].title = title;
+          setMemberMovies(updatedMovies);
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch title for ID:", id, err.message);
+      } finally {
+        setFetchingMovieIdxs((prev) => {
+          const next = { ...prev };
+          delete next[idx];
+          return next;
+        });
+      }
+    }
+  };
+
+  // 経歴の日付順ソート処理
+  const handleSortCareers = () => {
+    const sorted = [...memberCareers].sort((a, b) => {
+      return parseDateString(a.date) - parseDateString(b.date);
+    });
+    setMemberCareers(sorted);
+  };
 
   // ニュース編集/作成状態
   const [editingNews, setEditingNews] = useState<Partial<NewsItem> | null>(null);
@@ -272,28 +390,80 @@ export default function AdminDashboardClient({
 
     startTransition(async () => {
       try {
-        await createOrUpdateMember(editingMember.id || null, {
-          name: editingMember.name!,
-          slug: editingMember.slug!,
-          reading: editingMember.reading!,
-          iconImage: editingMember.iconImage || "",
-          headerImage: editingMember.headerImage || "",
-          standingImage: editingMember.standingImage || "",
-          description: editingMember.description || "",
-          favoriteGame: editingMember.favoriteGame || "",
-          color: editingMember.color || "#06B6D4",
-          birthday: editingMember.birthday || "",
-          youtube: editingMember.youtube || undefined,
-          twitch: editingMember.twitch || undefined,
-          twitter: editingMember.twitter || undefined,
-          tiktok: editingMember.tiktok || undefined,
-          instagram: editingMember.instagram || undefined,
-          fanName: editingMember.fanName || undefined,
-          hashtag: editingMember.hashtag || undefined,
-          career: JSON.stringify(memberCareers),
-          galleryUrls: memberGalleryUrls,
-          movieYoutubeIds: memberMovies,
+        // 既存の画像と比較して、変更されていない場合は "KEEP_ORIGINAL" を送信して転送量を削減
+        const origMember = initialMembers.find(m => m.id === editingMember.id);
+        
+        const payloadIcon = editingMember.iconImage?.startsWith("data:") 
+          ? editingMember.iconImage 
+          : (editingMember.id ? "KEEP_ORIGINAL" : editingMember.iconImage || "");
+
+        const payloadHeader = editingMember.headerImage?.startsWith("data:") 
+          ? editingMember.headerImage 
+          : (editingMember.id ? "KEEP_ORIGINAL" : editingMember.headerImage || "");
+
+        const payloadStanding = editingMember.standingImage?.startsWith("data:") 
+          ? editingMember.standingImage 
+          : (editingMember.id ? "KEEP_ORIGINAL" : editingMember.standingImage || "");
+
+        const payloadGallery = memberGalleryUrls.map((url) => {
+          if (!url.startsWith("data:") && origMember) {
+            const origIdx = origMember.gallery.findIndex(g => g.image === url);
+            if (origIdx !== -1) {
+              return `KEEP_ORIGINAL:${origIdx}`;
+            }
+          }
+          return url;
         });
+
+        const response = await fetch("/admin-portal/api/member", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editingMember.id || null,
+            data: {
+              name: editingMember.name!,
+              slug: editingMember.slug!,
+              reading: editingMember.reading!,
+              iconImage: payloadIcon,
+              headerImage: payloadHeader,
+              standingImage: payloadStanding,
+              description: editingMember.description || "",
+              favoriteGame: editingMember.favoriteGame || "",
+              color: editingMember.color || "#06B6D4",
+              birthday: editingMember.birthday || "",
+              youtube: editingMember.youtube || undefined,
+              twitch: editingMember.twitch || undefined,
+              twitter: editingMember.twitter || undefined,
+              tiktok: editingMember.tiktok || undefined,
+              instagram: editingMember.instagram || undefined,
+              fanName: editingMember.fanName || undefined,
+              hashtag: editingMember.hashtag || undefined,
+              career: JSON.stringify(
+                [...memberCareers].sort((a, b) => parseDateString(a.date) - parseDateString(b.date))
+              ),
+              galleryUrls: payloadGallery,
+              movieYoutubeIds: memberMovies,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          let errMsg = "メンバーの保存に失敗しました。";
+          try {
+            const resData = await response.json();
+            errMsg = resData.error || errMsg;
+          } catch (e) {
+            if (response.status === 413) {
+              errMsg = "画像ファイルの合計サイズが大きすぎます。画質を下げるか、画像の解像度を小さくしてください。";
+            } else {
+              errMsg = `サーバーエラーが発生しました (ステータス: ${response.status})`;
+            }
+          }
+          throw new Error(errMsg);
+        }
+
         setEditingMember(null);
         router.refresh();
       } catch (err: any) {
@@ -352,13 +522,42 @@ export default function AdminDashboardClient({
 
     startTransition(async () => {
       try {
-        await createOrUpdateNews(editingNews.id || null, {
-          title: editingNews.title!,
-          slug: editingNews.slug!,
-          thumbnail: editingNews.thumbnail || "",
-          content: editingNews.content || "",
-          published: editingNews.published ?? true,
+        const payloadThumbnail = editingNews.thumbnail?.startsWith("data:") 
+          ? editingNews.thumbnail 
+          : (editingNews.id ? "KEEP_ORIGINAL" : editingNews.thumbnail || "");
+
+        const response = await fetch("/admin-portal/api/news", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editingNews.id || null,
+            data: {
+              title: editingNews.title!,
+              slug: editingNews.slug!,
+              thumbnail: payloadThumbnail,
+              content: editingNews.content || "",
+              published: editingNews.published ?? true,
+            },
+          }),
         });
+
+        if (!response.ok) {
+          let errMsg = "ニュースの保存に失敗しました。";
+          try {
+            const resData = await response.json();
+            errMsg = resData.error || errMsg;
+          } catch (e) {
+            if (response.status === 413) {
+              errMsg = "画像ファイルの合計サイズが大きすぎます。画質を下げるか、画像の解像度を小さくしてください。";
+            } else {
+              errMsg = `サーバーエラーが発生しました (ステータス: ${response.status})`;
+            }
+          }
+          throw new Error(errMsg);
+        }
+
         setEditingNews(null);
         router.refresh();
       } catch (err: any) {
@@ -570,7 +769,7 @@ export default function AdminDashboardClient({
 
                 {/* ヘッダー画像 */}
                 <div className="space-y-2">
-                  <label className="block text-xs text-slate-400 font-bold">ヘッダー画像 (詳細ページ背景用) *</label>
+                  <label className="block text-xs text-slate-400 font-bold">ヘッダー画像 (詳細ページ背景用)</label>
                   <div className="flex gap-3 items-center">
                     <div className="relative w-20 h-10 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
                       {editingMember.headerImage ? (
@@ -778,13 +977,24 @@ export default function AdminDashboardClient({
                 <label className="text-xs font-bold text-slate-400 border-l-2 border-cyan-400 pl-2 tracking-wider">
                   経歴・活動実績
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setMemberCareers([...memberCareers, { date: "", title: "" }])}
-                  className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer"
-                >
-                  <Plus size={14} /> 経歴を追加
-                </button>
+                <div className="flex gap-4">
+                  {memberCareers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleSortCareers}
+                      className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer"
+                    >
+                      日付で並び替え
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setMemberCareers([...memberCareers, { date: "", title: "" }])}
+                    className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer"
+                  >
+                    <Plus size={14} /> 経歴を追加
+                  </button>
+                </div>
               </div>
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {memberCareers.map((c, idx) => (
@@ -830,7 +1040,7 @@ export default function AdminDashboardClient({
             <div className="space-y-3 border-t border-white/5 pt-4">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-slate-400 border-l-2 border-cyan-400 pl-2 tracking-wider">
-                  ギャラリー画像 URL (Unsplash 等)
+                  ギャラリー画像 (Unsplash等 または アップロード)
                 </label>
                 <button
                   type="button"
@@ -840,24 +1050,59 @@ export default function AdminDashboardClient({
                   <Plus size={14} /> 画像を追加
                 </button>
               </div>
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
                 {memberGalleryUrls.map((url, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={url}
-                      onChange={(e) => {
-                        const newUrls = [...memberGalleryUrls];
-                        newUrls[idx] = e.target.value;
-                        setMemberGalleryUrls(newUrls);
-                      }}
-                      className="flex-grow px-2 py-1.5 border border-white/10 rounded bg-black/40 text-white text-xs"
-                      placeholder="https://images.unsplash.com/..."
-                    />
+                  <div key={idx} className="flex gap-3 items-center border border-white/5 p-3 rounded-lg bg-black/20">
+                    {/* プレビュー */}
+                    <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                      {url ? (
+                        <SafeImage src={url} alt={`Gallery Preview ${idx + 1}`} fill className="object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-slate-500">No Image</span>
+                      )}
+                    </div>
+                    {/* コントロール群 */}
+                    <div className="flex-grow space-y-1.5 min-w-0">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleGalleryImageFileChange(e, idx)}
+                        className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
+                      />
+                      {(!url || !url.startsWith("data:")) ? (
+                        <input
+                          type="text"
+                          value={url}
+                          onChange={(e) => {
+                            const newUrls = [...memberGalleryUrls];
+                            newUrls[idx] = e.target.value;
+                            setMemberGalleryUrls(newUrls);
+                          }}
+                          className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-xs"
+                          placeholder="または画像URLを直接入力..."
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-white/10 rounded bg-cyan-950/20 text-cyan-400 text-xs">
+                          <span className="truncate max-w-[200px]">✓ 画像ファイルが選択されています</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newUrls = [...memberGalleryUrls];
+                              newUrls[idx] = "";
+                              setMemberGalleryUrls(newUrls);
+                            }}
+                            className="text-pink-500 hover:text-pink-400 font-semibold text-[10px] cursor-pointer"
+                          >
+                            clear
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setMemberGalleryUrls(memberGalleryUrls.filter((_, i) => i !== idx))}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 transition cursor-pointer"
+                      className="p-2 text-slate-500 hover:text-rose-400 bg-white/5 hover:bg-white/10 rounded transition cursor-pointer flex-shrink-0"
+                      title="この画像を削除"
                     >
                       <X size={16} />
                     </button>
@@ -873,7 +1118,7 @@ export default function AdminDashboardClient({
             <div className="space-y-3 border-t border-white/5 pt-4">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-slate-400 border-l-2 border-cyan-400 pl-2 tracking-wider">
-                  代表動画 (YouTube ID と タイトル)
+                  代表動画 (YouTube URL / ID 入力でタイトル自動取得)
                 </label>
                 <button
                   type="button"
@@ -889,29 +1134,33 @@ export default function AdminDashboardClient({
                     <input
                       type="text"
                       value={m.youtubeId}
-                      onChange={(e) => {
-                        const newMovies = [...memberMovies];
-                        newMovies[idx].youtubeId = e.target.value;
-                        setMemberMovies(newMovies);
-                      }}
-                      className="w-32 px-2 py-1.5 border border-white/10 rounded bg-black/40 text-white text-xs"
-                      placeholder="YouTube ID (例: dQw4w9WgXcQ)"
+                      onChange={(e) => handleMovieUrlOrIdChange(e.target.value, idx)}
+                      className="flex-grow md:flex-initial md:w-80 px-2 py-1.5 border border-white/10 rounded bg-black/40 text-white text-xs"
+                      placeholder="YouTube URL または ID (例: https://youtu.be/...)"
                     />
-                    <input
-                      type="text"
-                      value={m.title}
-                      onChange={(e) => {
-                        const newMovies = [...memberMovies];
-                        newMovies[idx].title = e.target.value;
-                        setMemberMovies(newMovies);
-                      }}
-                      className="flex-grow px-2 py-1.5 border border-white/10 rounded bg-black/40 text-white text-xs"
-                      placeholder="動画タイトル (例: 【歌ってみた】ネオンサイン)"
-                    />
+                    <div className="relative flex-grow">
+                      <input
+                        type="text"
+                        value={m.title}
+                        onChange={(e) => {
+                          const newMovies = [...memberMovies];
+                          newMovies[idx].title = e.target.value;
+                          setMemberMovies(newMovies);
+                        }}
+                        className="w-full px-2 py-1.5 pr-8 border border-white/10 rounded bg-black/40 text-white text-xs"
+                        placeholder={fetchingMovieIdxs[idx] ? "タイトル自動取得中..." : "動画タイトル (自動取得可)"}
+                        disabled={fetchingMovieIdxs[idx]}
+                      />
+                      {fetchingMovieIdxs[idx] && (
+                        <div className="absolute right-2.5 top-2">
+                          <Loader2 size={12} className="animate-spin text-cyan-400" />
+                        </div>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setMemberMovies(memberMovies.filter((_, i) => i !== idx))}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 transition cursor-pointer"
+                      className="p-1.5 text-slate-500 hover:text-rose-400 transition cursor-pointer flex-shrink-0"
                     >
                       <X size={16} />
                     </button>
@@ -999,15 +1248,45 @@ export default function AdminDashboardClient({
                     placeholder="summer-24h-stream"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">サムネイル画像 URL</label>
-                  <input
-                    type="text"
-                    value={editingNews.thumbnail || ""}
-                    onChange={(e) => setEditingNews({ ...editingNews, thumbnail: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/10 rounded-lg bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-pink-500/50 text-sm"
-                    placeholder="https://images.unsplash.com/..."
-                  />
+                <div className="space-y-2">
+                  <label className="block text-xs text-slate-400 font-bold">サムネイル画像</label>
+                  <div className="flex gap-3 items-center">
+                    <div className="relative w-20 h-12 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                      {editingNews.thumbnail ? (
+                        <SafeImage src={editingNews.thumbnail} alt="Thumbnail Preview" fill className="object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-slate-500">No Image</span>
+                      )}
+                    </div>
+                    <div className="flex-grow space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleNewsThumbnailFileChange}
+                        className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-white/5 file:text-slate-300 hover:file:bg-white/10 file:cursor-pointer"
+                      />
+                      {(!editingNews.thumbnail || !editingNews.thumbnail.startsWith("data:")) ? (
+                        <input
+                          type="text"
+                          value={editingNews.thumbnail || ""}
+                          onChange={(e) => setEditingNews({ ...editingNews, thumbnail: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-white/10 rounded bg-black/40 text-white focus:outline-none focus:ring-1 focus:ring-pink-500/50 text-xs"
+                          placeholder="または画像URLを直接入力..."
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-white/10 rounded bg-pink-950/20 text-pink-400 text-xs">
+                          <span className="truncate max-w-[200px]">✓ 画像ファイルが選択されています</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingNews({ ...editingNews, thumbnail: "" })}
+                            className="text-pink-500 hover:text-pink-400 font-semibold text-[10px] cursor-pointer"
+                          >
+                            クリア
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <input

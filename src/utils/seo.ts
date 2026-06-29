@@ -2,7 +2,19 @@ import { Metadata } from "next";
 
 const SITE_NAME = "「余りモノ」公式ホームページ";
 const SITE_DESCRIPTION = "ゲーム配信者グループ「余りモノ」の公式ホームページ。メンバー情報、最新ニュース、ギャラリー、動画配信情報などをお届けします。";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://amarimono.example.com";
+
+const getSiteUrl = () => {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  // Vercelが自動提供する環境変数 (例: amarimono-chi.vercel.app)
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "https://amarimono-chi.vercel.app";
+};
+
+const SITE_URL = getSiteUrl();
 
 interface SeoOptions {
   title: string;

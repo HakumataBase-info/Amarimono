@@ -3,20 +3,13 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import crypto from "crypto";
-
-const PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-
-// 暗号セッショントークン生成
-function getSessionToken() {
-  return crypto.createHmac("sha256", PASSWORD).update("portal-admin-session").digest("hex");
-}
+import { getSessionToken, verifyPassword } from "@/lib/auth";
 
 /**
  * ログイン処理
  */
 export async function loginAdmin(password: string): Promise<{ success: boolean; error?: string }> {
-  if (password === PASSWORD) {
+  if (verifyPassword(password)) {
     const cookieStore = await cookies();
     cookieStore.set("admin_session", getSessionToken(), {
       httpOnly: true,
@@ -56,7 +49,7 @@ export async function createOrUpdateMember(
     slug: string;
     reading: string;
     iconImage: string;
-    headerImage: string;
+    headerImage?: string;
     standingImage?: string;
     description: string;
     favoriteGame: string;
@@ -81,7 +74,7 @@ export async function createOrUpdateMember(
     slug: data.slug,
     reading: data.reading,
     iconImage: data.iconImage,
-    headerImage: data.headerImage,
+    headerImage: data.headerImage || null,
     standingImage: data.standingImage || null,
     description: data.description,
     favoriteGame: data.favoriteGame,
@@ -237,4 +230,24 @@ export async function deleteNews(id: string, slug: string) {
   revalidatePath("/");
   revalidatePath("/news");
   revalidatePath(`/news/${slug}`);
+}
+
+/**
+ * YouTube動画のタイトルを oEmbed API 経由で取得する
+ */
+export async function fetchYoutubeTitle(youtubeId: string): Promise<string> {
+  if (!(await checkAuth())) throw new Error("Unauthorized");
+  
+  try {
+    const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}&format=json`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("動画情報の取得に失敗しました。");
+    }
+    const data = await res.json();
+    return data.title || "";
+  } catch (error) {
+    console.error("fetchYoutubeTitle error:", error);
+    throw new Error("YouTube動画のタイトルを取得できませんでした。IDが正しいか確認してください。");
+  }
 }

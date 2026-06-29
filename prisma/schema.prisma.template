@@ -13,7 +13,7 @@ model Member {
   slug         String    @unique
   reading      String
   iconImage    String    // プロフィール画像
-  headerImage  String    // ヘッダー背景 / 大型ビジュアル
+  headerImage  String?   // ヘッダー背景 / 大型ビジュアル
   description  String    // 自己紹介
   favoriteGame String    // 好きなゲーム
   color        String    // メンバーカラー（例: "#7C3AED"）

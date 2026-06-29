@@ -10,7 +10,7 @@ import ScrollDown from "@/components/common/ScrollDown";
 // クライアント側のアニメーション装飾用ラッパー
 import PageTransition from "@/components/common/PageTransition";
 
-export const revalidate = 60; // 60秒キャッシュ
+export const revalidate = 86400; // 24時間キャッシュ
 
 export default async function HomePage() {
   // サーバーサイドでのデータフェッチ
@@ -44,7 +44,7 @@ export default async function HomePage() {
             </span>
 
             {/* ロゴの表示 */}
-            <div className="relative w-72 h-40 md:w-96 md:h-52 animate-bounce" style={{ animationDuration: '6s' }}>
+            <div className="relative w-72 h-40 md:w-96 md:h-52 animate-float mx-auto">
               <Image
                 src="/logo.png"
                 alt="余りモノ"
@@ -63,8 +63,8 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-xs md:text-sm text-slate-400 max-w-lg leading-relaxed mt-2 tracking-wider">
-              ネットの片隅に佇む、はみ出たモノたち。<br />
-              余っているわけじゃない、俺らがメインだ。
+              <span className="inline-block">ネットの片隅に佇む、</span><span className="inline-block">はみ出たモノたち。</span><br />
+              <span className="inline-block">余っているわけじゃない、</span><span className="inline-block">俺らがメインだ。</span>
             </p>
 
             {/* CTAボタン */}
@@ -85,7 +85,7 @@ export default async function HomePage() {
           </div>
 
           {/* Scroll Down */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 hidden md:block">
             <ScrollDown />
           </div>
         </section>
@@ -100,11 +100,11 @@ export default async function HomePage() {
               「余りモノ」とは
             </h2>
             <p className="text-sm md:text-base text-slate-300 leading-loose max-w-2xl mt-4">
-              原田ダダスケ主催のストリーマーグループ。<br />
-              彼らが集まったとき、かつてないハチャメチャが始まる。<br />
+              <span className="inline-block">原田ダダスケ主催の</span><span className="inline-block">ストリーマーグループ。</span><br />
+              <span className="inline-block">彼らが集まったとき、</span><span className="inline-block">かつてないハチャメチャが始まる。</span><br />
               <br />
-              ゲーム実況、esports、音楽、ストリートカルチャー。<br />
-              余ったモノたちから生まれる、本気の熱狂をあなたに。
+              <span className="inline-block">ゲーム実況、</span><span className="inline-block">esports、</span><span className="inline-block">音楽、</span><span className="inline-block">ストリートカルチャー。</span><br />
+              <span className="inline-block">余ったモノたちから生まれる、</span><span className="inline-block">本気の熱狂をあなたに。</span>
             </p>
           </div>
         </section>
@@ -162,6 +162,39 @@ export default async function HomePage() {
               {members.map((member) => (
                 <MemberCard key={member.id} member={member} />
               ))}
+            </div>
+
+            {/* 新規募集セクション */}
+            <div className="mt-16 max-w-3xl mx-auto">
+              <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-r from-black/80 to-[#0b0b12] p-8 md:p-10 text-center">
+                {/* 背景ネオン光彩 */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-pink-500/20 rounded-2xl blur-xl opacity-40 -z-10" />
+                
+                <span className="text-[10px] font-bold tracking-[0.3em] text-cyan-400 uppercase block mb-3">
+                  RECRUITMENT
+                </span>
+                
+                <h3 className="text-xl md:text-2xl font-extrabold tracking-wider text-white mb-3">
+                  新規メンバー・配信者 募集中！
+                </h3>
+                
+                <p className="text-xs md:text-sm text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
+                  「余りモノ」では、共に熱狂を作り上げる仲間を募集しています。<br />
+                  配信初心者、プロ、ジャンル問わず、<strong className="text-emerald-400">誰でも参加可能</strong>です。まずはお気軽にご参加ください！
+                </p>
+
+                <a
+                  href="https://discord.gg/KucKhg8P4q"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-8 py-3 rounded-full font-bold text-xs tracking-widest text-white bg-[#5865F2] hover:bg-[#4752C4] hover:scale-105 hover:shadow-[0_0_20px_rgba(88,101,242,0.4)] transition-all duration-300 uppercase"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.196.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z" />
+                  </svg>
+                  Discordで参加する
+                </a>
+              </div>
             </div>
           </div>
         </section>

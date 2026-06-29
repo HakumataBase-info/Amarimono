@@ -18,7 +18,7 @@ const notoSansJp = Noto_Sans_JP({
 
 export const metadata: Metadata = generateSiteMetadata({
   title: "余りモノ OFFICIAL SITE",
-  description: "原田ダダスケ主催 of ストリーマーグループ「余りモノ」の公式ホームページ。「余っているわけじゃない、俺らがメインだ。」を掲げるはみ出たモノたちによる、本気の熱狂をあなたに！",
+  description: "原田ダダスケ主催のストリーマーグループ「余りモノ」の公式ホームページ。「余っているわけじゃない、俺らがメインだ。」はみ出たモノたちによる、本気の熱狂をあなたに！",
 });
 
 export default function RootLayout({

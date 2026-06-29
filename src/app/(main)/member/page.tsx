@@ -4,7 +4,7 @@ import PageTransition from "@/components/common/PageTransition";
 import { generateSiteMetadata } from "@/utils/seo";
 import { Metadata } from "next";
 
-export const revalidate = 60; // キャッシュ60秒
+export const revalidate = 86400; // キャッシュ24時間
 
 export const metadata: Metadata = generateSiteMetadata({
   title: "MEMBER 一覧",

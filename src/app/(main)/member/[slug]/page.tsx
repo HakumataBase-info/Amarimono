@@ -10,7 +10,7 @@ import CareerTimeline from "@/components/member/CareerTimeline";
 import GallerySlider from "@/components/member/GallerySlider";
 import MovieEmbeds from "@/components/member/MovieEmbeds";
 
-export const revalidate = 60; // キャッシュ60秒
+export const revalidate = 86400; // キャッシュ24時間
 
 interface MemberDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -63,22 +63,33 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
       <div className="relative min-h-screen pb-24 overflow-hidden">
         
         {/* ================= LARGE HERO VISUAL ================= */}
-        <section className="relative h-[45vh] md:h-[60vh] w-full overflow-hidden bg-black/80">
-          <SafeImage
-            src={member.headerImage}
-            alt={`${member.name} Header Image`}
-            fill
-            priority
-            className="object-cover opacity-35 filter blur-[1px]"
-          />
+        <section className="relative h-[45vh] md:h-[60vh] min-h-[340px] md:min-h-[480px] w-full overflow-hidden bg-black/80">
+          {member.headerImage ? (
+            <SafeImage
+              src={member.headerImage}
+              alt={`${member.name} Header Image`}
+              fill
+              priority
+              className="object-cover opacity-35 filter blur-[1px]"
+            />
+          ) : (
+            /* フォールバック背景：メンバーカラーに基づいた幻想的なグラデーション光彩 */
+            <div
+              className="absolute inset-0 opacity-40 filter blur-[80px]"
+              style={{
+                background: `radial-gradient(circle at 50% 30%, ${member.color}88 0%, transparent 60%),
+                             radial-gradient(circle at 20% 80%, ${member.color}44 0%, transparent 50%)`
+              }}
+            />
+          )}
           {/* 下部へのグラデーションフェード */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#060608] via-[#060608]/40 to-transparent" />
           
           {/* タイトルエリア */}
-          <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 z-10">
+          <div className="absolute bottom-6 md:bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-10 z-10">
             {/* アイコン画像 */}
             <div
-              className="relative w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-2 bg-black/60 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex-shrink-0"
+              className="relative w-28 h-28 md:w-48 md:h-48 rounded-2xl overflow-hidden border-2 bg-black/60 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex-shrink-0"
               style={{ borderColor: member.color }}
             >
               <SafeImage
@@ -212,12 +223,19 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
             
             {/* モバイル表示時の立ち絵 (自己紹介の前に配置) */}
             {member.standingImage && (
-              <div className="block lg:hidden relative w-full aspect-[3/4] max-w-xs mx-auto overflow-hidden rounded-2xl bg-gradient-to-b from-transparent to-white/5 p-4 border border-white/5">
+              <div className="block lg:hidden relative w-full aspect-[3/4] max-w-xs mx-auto overflow-visible mt-12 mb-10 p-4">
+                {/* 立ち絵背後のネオン光彩 */}
+                <div
+                  className="absolute w-48 h-48 rounded-full opacity-40 blur-[40px] pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0"
+                  style={{
+                    background: `radial-gradient(circle, ${member.color} 0%, transparent 70%)`
+                  }}
+                />
                 <SafeImage
                   src={member.standingImage}
                   alt={`${member.name} Standing`}
                   fill
-                  className="object-contain"
+                  className="object-contain relative z-10 scale-[1.2]"
                 />
               </div>
             )}
